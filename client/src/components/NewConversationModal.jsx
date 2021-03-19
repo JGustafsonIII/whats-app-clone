@@ -1,0 +1,51 @@
+import React, { useState } from 'react';
+import { Modal, Form, Button } from 'react-bootstrap';
+import { useContacts } from '../context/ContactsProvider';
+import { useConversations } from '../context/ConversationsProvider';
+
+const NewConversationModal = ({ closeModal }) => {
+  const [selectedContactIDs, setSelectedContactIDs] = useState([]);
+  const { createConversation } = useConversations();
+  const { contacts } = useContacts();
+
+  const handleCheckboxChange = (contactID) => {
+    setSelectedContactIDs((prevSelectedContactIDs) => {
+      if (prevSelectedContactIDs.includes(contactID)) {
+        return prevSelectedContactIDs.filter((prevID) => {
+          return contactID !== prevID;
+        });
+      } else {
+        return [...prevSelectedContactIDs, contactID];
+      }
+    });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    createConversation(selectedContactIDs);
+    closeModal(false);
+  };
+
+  return (
+    <>
+      <Modal.Header closeButton>Create Conversation</Modal.Header>
+      <Modal.Body>
+        <Form onSubmit={handleSubmit}>
+          {contacts.map((contact) => (
+            <Form.Group controlId={contact.id} key={contact.id}>
+              <Form.Check
+                type='checkbox'
+                value={selectedContactIDs.includes(contact.id)}
+                label={contact.name}
+                onChange={() => handleCheckboxChange(contact.id)}
+              />
+            </Form.Group>
+          ))}
+          <Button type='submit'>Create</Button>
+        </Form>
+      </Modal.Body>
+    </>
+  );
+};
+
+export default NewConversationModal;
